@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Tile, Position, BOARD_SIZE } from '../types/game';
 import { useGameStore } from '../store/useGameStore';
 import FruitTile from './FruitTile';
@@ -8,16 +8,65 @@ interface GameBoardProps {
 }
 
 const GameBoard: React.FC<GameBoardProps> = ({ board }) => {
-  const { selectedTile, selectTile, isAnimating } = useGameStore();
+  const {
+    selectedTile,
+    draggedTile,
+    isAnimating,
+    selectTile,
+    setDraggedTile,
+    handleDragDrop,
+  } = useGameStore();
+
+  const [dragOverTile, setDragOverTile] = useState<Position | null>(null);
 
   const handleClick = (pos: Position) => {
     if (isAnimating) return;
     selectTile(pos);
   };
 
+  const handleDragStart = (pos: Position) => {
+    if (isAnimating) return;
+    setDraggedTile(pos);
+    setDragOverTile(null);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedTile(null);
+    setDragOverTile(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, pos: Position) => {
+    e.preventDefault();
+    if (!draggedTile) return;
+    if (draggedTile.row === pos.row && draggedTile.col === pos.col) return;
+    setDragOverTile(pos);
+  };
+
+  const handleDragLeave = () => {
+    setDragOverTile(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, pos: Position) => {
+    e.preventDefault();
+    if (!draggedTile) return;
+    
+    handleDragDrop(draggedTile, pos);
+    handleDragEnd();
+  };
+
   const isSelected = (pos: Position): boolean => {
     if (!selectedTile) return false;
     return selectedTile.row === pos.row && selectedTile.col === pos.col;
+  };
+
+  const isDragged = (pos: Position): boolean => {
+    if (!draggedTile) return false;
+    return draggedTile.row === pos.row && draggedTile.col === pos.col;
+  };
+
+  const isDragOver = (pos: Position): boolean => {
+    if (!dragOverTile) return false;
+    return dragOverTile.row === pos.row && dragOverTile.col === pos.col;
   };
 
   if (board.length === 0) {
@@ -42,7 +91,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ board }) => {
             key={tile.id}
             tile={tile}
             isSelected={isSelected({ row: rowIndex, col: colIndex })}
+            isDragged={isDragged({ row: rowIndex, col: colIndex })}
+            isDragOver={isDragOver({ row: rowIndex, col: colIndex })}
             onClick={handleClick}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+            onDragLeave={handleDragLeave}
           />
         ))
       )}

@@ -4,24 +4,77 @@ import { Tile, FRUIT_EMOJIS, Position } from '../types/game';
 interface FruitTileProps {
   tile: Tile;
   isSelected: boolean;
+  isDragged: boolean;
+  isDragOver: boolean;
   onClick: (pos: Position) => void;
+  onDragStart: (pos: Position) => void;
+  onDragEnd: () => void;
+  onDragOver: (e: React.DragEvent, pos: Position) => void;
+  onDrop: (e: React.DragEvent, pos: Position) => void;
+  onDragLeave: () => void;
 }
 
-const FruitTile: React.FC<FruitTileProps> = ({ tile, isSelected, onClick }) => {
+const FruitTile: React.FC<FruitTileProps> = ({
+  tile,
+  isSelected,
+  isDragged,
+  isDragOver,
+  onClick,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
+  onDrop,
+  onDragLeave,
+}) => {
+  const handleDragStart = (e: React.DragEvent) => {
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', `${tile.position.row}-${tile.position.col}`);
+    }
+    onDragStart(tile.position);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+    onDragOver(e, tile.position);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    onDrop(e, tile.position);
+  };
+
   return (
     <button
+      draggable
       onClick={() => onClick(tile.position)}
+      onDragStart={handleDragStart}
+      onDragEnd={onDragEnd}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onDragLeave={onDragLeave}
       className={`
         w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20
         flex items-center justify-center
         text-3xl sm:text-4xl md:text-5xl
         rounded-xl
         transition-all duration-200
-        cursor-pointer
+        cursor-grab active:cursor-grabbing
         select-none
         ${isSelected
           ? 'ring-4 ring-yellow-400 scale-110 shadow-xl z-10'
           : 'hover:scale-105 hover:shadow-lg'
+        }
+        ${isDragged
+          ? 'opacity-50 scale-90 rotate-6'
+          : ''
+        }
+        ${isDragOver
+          ? 'ring-4 ring-cyan-400 scale-110 bg-cyan-400/30'
+          : ''
         }
         ${tile.isMatched
           ? 'animate-pulse scale-0 opacity-0'
@@ -37,7 +90,7 @@ const FruitTile: React.FC<FruitTileProps> = ({ tile, isSelected, onClick }) => {
         border-2 border-white/50
       `}
     >
-      <span className="drop-shadow-md">
+      <span className="drop-shadow-md pointer-events-none">
         {FRUIT_EMOJIS[tile.type]}
       </span>
     </button>

@@ -31,6 +31,7 @@ export interface GameState {
   timeLeft: number;
   status: GameStatus;
   selectedTile: Position | null;
+  draggedTile: Position | null;
   isAnimating: boolean;
 }
 
@@ -41,6 +42,8 @@ export interface GameActions {
   tickTimer: () => void;
   processSwap: (pos1: Position, pos2: Position) => Promise<void>;
   processMatches: (board: Tile[][]) => Promise<void>;
+  setDraggedTile: (pos: Position | null) => void;
+  handleDragDrop: (from: Position, to: Position) => void;
 }
 
 export const BOARD_SIZE = 5;

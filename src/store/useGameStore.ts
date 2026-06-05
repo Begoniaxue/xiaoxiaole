@@ -29,6 +29,7 @@ export const useGameStore = create<StoreState>((set, get) => ({
   timeLeft: GAME_DURATION,
   status: 'idle',
   selectedTile: null,
+  draggedTile: null,
   isAnimating: false,
 
   startGame: () => {
@@ -39,6 +40,7 @@ export const useGameStore = create<StoreState>((set, get) => ({
       timeLeft: GAME_DURATION,
       status: 'playing',
       selectedTile: null,
+      draggedTile: null,
       isAnimating: false,
     });
   },
@@ -50,8 +52,22 @@ export const useGameStore = create<StoreState>((set, get) => ({
       timeLeft: GAME_DURATION,
       status: 'idle',
       selectedTile: null,
+      draggedTile: null,
       isAnimating: false,
     });
+  },
+
+  setDraggedTile: (pos: Position | null) => {
+    set({ draggedTile: pos });
+  },
+
+  handleDragDrop: (from: Position, to: Position) => {
+    const { status, isAnimating } = get();
+    if (status !== 'playing' || isAnimating) return;
+    if (from.row === to.row && from.col === to.col) return;
+    if (!isAdjacent(from, to)) return;
+    
+    get().processSwap(from, to);
   },
 
   tickTimer: () => {

@@ -22,7 +22,7 @@ const ControlPanel: React.FC = () => {
           </button>
           <div className="text-center text-white/70 text-sm max-w-xs">
             <p className="mb-2">📌 <strong>游戏规则</strong></p>
-            <p>• 点击相邻水果互换位置</p>
+            <p>• <strong>点击</strong>或<strong>拖拽</strong>相邻水果互换位置</p>
             <p>• 横竖连成3个及以上相同水果自动消除</p>
             <p>• 60秒内尽可能获得高分</p>
             <p>• 互换无法消除会自动撤回</p>
